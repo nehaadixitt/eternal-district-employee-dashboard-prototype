@@ -17,8 +17,13 @@ export const DEMO_MERCHANTS = [
       status: 'sent',
       raised_at: '2024-08-28T14:00:00Z',
       signed_at: null,
+      last_reminder_at: '2024-08-29T10:00:00Z',
+      reminder_count: 1,
     },
     signature: { status: 'awaiting', reminder_sent_at: '2024-08-29T10:00:00Z' },
+    comms_history: [
+      { id: 'c1', timestamp: '2024-08-29T10:00:00Z', channels: ['Email', 'SMS'], purpose: 'Contract Signature Reminder', reminder_number: 1, triggered_by: 'Priya S', status: 'sent_demo' },
+    ],
     discount: { applicable: true, percentage: 20, duration_days: 30, start_date: '2024-09-01', end_date: '2024-10-01', notes: 'Merchant requested 30-day discount', form_status: 'pending' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'completed' },
@@ -59,8 +64,9 @@ export const DEMO_MERCHANTS = [
     overall_status: 'restaurant_id',
     created_at: '2024-08-27T10:00:00Z',
     updated_at: '2024-08-27T15:00:00Z',
-    contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null },
+    contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null, last_reminder_at: null, reminder_count: 0 },
     signature: { status: 'not_sent', reminder_sent_at: null },
+    comms_history: [],
     discount: { applicable: false, percentage: null, duration_days: null, start_date: null, end_date: null, notes: '', form_status: 'not_required' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'pending' },
@@ -100,8 +106,9 @@ export const DEMO_MERCHANTS = [
     overall_status: 'sales_closure',
     created_at: '2024-08-25T08:00:00Z',
     updated_at: '2024-08-30T09:00:00Z',
-    contract: { contract_id: 'CTR-0002', status: 'signed', raised_at: '2024-08-26T10:00:00Z', signed_at: '2024-08-30T09:00:00Z' },
+    contract: { contract_id: 'CTR-0002', status: 'signed', raised_at: '2024-08-26T10:00:00Z', signed_at: '2024-08-30T09:00:00Z', last_reminder_at: null, reminder_count: 0 },
     signature: { status: 'signed', reminder_sent_at: null },
+    comms_history: [],
     discount: { applicable: true, percentage: 15, duration_days: 14, start_date: '2024-09-01', end_date: '2024-09-15', notes: '', form_status: 'pending' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'completed' },
@@ -140,8 +147,9 @@ export const DEMO_MERCHANTS = [
     overall_status: 'documents',
     created_at: '2024-08-29T11:00:00Z',
     updated_at: '2024-08-29T14:00:00Z',
-    contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null },
+    contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null, last_reminder_at: null, reminder_count: 0 },
     signature: { status: 'not_sent', reminder_sent_at: null },
+    comms_history: [],
     discount: { applicable: null, percentage: null, duration_days: null, start_date: null, end_date: null, notes: '', form_status: 'not_set' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'pending' },
@@ -181,8 +189,9 @@ export const DEMO_MERCHANTS = [
     overall_status: 'commercial',
     created_at: '2024-08-20T09:00:00Z',
     updated_at: '2024-08-31T10:00:00Z',
-    contract: { contract_id: 'CTR-0003', status: 'signed', raised_at: '2024-08-22T10:00:00Z', signed_at: '2024-08-25T14:00:00Z' },
+    contract: { contract_id: 'CTR-0003', status: 'signed', raised_at: '2024-08-22T10:00:00Z', signed_at: '2024-08-25T14:00:00Z', last_reminder_at: null, reminder_count: 0 },
     signature: { status: 'signed', reminder_sent_at: null },
+    comms_history: [],
     discount: { applicable: true, percentage: 25, duration_days: 7, start_date: '2024-09-01', end_date: '2024-09-08', notes: 'Launch week offer', form_status: 'completed' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'completed' },
@@ -225,8 +234,9 @@ export const DEMO_MERCHANTS = [
     overall_status: 'live',
     created_at: '2024-08-10T09:00:00Z',
     updated_at: '2024-08-20T12:00:00Z',
-    contract: { contract_id: 'CTR-0004', status: 'signed', raised_at: '2024-08-12T10:00:00Z', signed_at: '2024-08-15T14:00:00Z' },
+    contract: { contract_id: 'CTR-0004', status: 'signed', raised_at: '2024-08-12T10:00:00Z', signed_at: '2024-08-15T14:00:00Z', last_reminder_at: null, reminder_count: 0 },
     signature: { status: 'signed', reminder_sent_at: null },
+    comms_history: [],
     discount: { applicable: false, percentage: null, duration_days: null, start_date: null, end_date: null, notes: '', form_status: 'not_required' },
     documents: [
       { type: 'GST Certificate', required: 'yes', status: 'completed' },

@@ -58,6 +58,42 @@ export function AppProvider({ children }) {
     }))
   }
 
+  // Simulates sending a contract reminder (demo mode — no real messages sent)
+  function sendReminder(merchantId, channels) {
+    const now = new Date().toISOString()
+    setMerchants(prev => prev.map(m => {
+      if (m.id !== merchantId) return m
+      const reminderCount = (m.contract.reminder_count || 0) + 1
+      const commsEntry = {
+        id: `c${Date.now()}`,
+        timestamp: now,
+        channels,
+        purpose: 'Contract Signature Reminder',
+        reminder_number: reminderCount,
+        triggered_by: currentUser.name,
+        status: 'sent_demo',
+      }
+      const activityEntry = {
+        id: `a${Date.now()}`,
+        action: 'Contract Reminder Sent',
+        description: `Reminder #${reminderCount} sent via ${channels.join(' + ')} (Demo Mode)`,
+        user: currentUser.name,
+        timestamp: now,
+      }
+      return {
+        ...m,
+        updated_at: now,
+        contract: {
+          ...m.contract,
+          last_reminder_at: now,
+          reminder_count: reminderCount,
+        },
+        comms_history: [...(m.comms_history || []), commsEntry],
+        activity: [...m.activity, activityEntry],
+      }
+    }))
+  }
+
   function addMerchant(data) {
     const id = String(Date.now())
     const restaurantId = data.listing_type === 'existing' ? data.restaurant_id : `DEMO-${10007 + merchants.length}`
@@ -86,7 +122,7 @@ export function AppProvider({ children }) {
       overall_status: 'account',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null },
+      contract: { contract_id: null, status: 'not_raised', raised_at: null, signed_at: null, last_reminder_at: null, reminder_count: 0 },
       signature: { status: 'not_sent', reminder_sent_at: null },
       discount: { applicable: null, prebook_applicable: null, percentage: null, duration_days: null, start_date: null, end_date: null, notes: '', form_status: 'not_set', prebook_form_status: 'not_set' },
       documents: [
@@ -97,6 +133,7 @@ export function AppProvider({ children }) {
       ],
       tasks: [...freshTasks, ...baseTasks],
       notes: [],
+      comms_history: [],
       activity: [{ id: 'a1', action: 'Account Created', description: 'Merchant account created', user: currentUser.name, timestamp: new Date().toISOString() }],
     }
     setMerchants(prev => [newMerchant, ...prev])
@@ -104,7 +141,7 @@ export function AppProvider({ children }) {
   }
 
   return (
-    <AppContext.Provider value={{ merchants, currentUser, getMerchant, updateMerchant, updateTask, updateDocument, addNote, addActivity, addMerchant }}>
+    <AppContext.Provider value={{ merchants, currentUser, getMerchant, updateMerchant, updateTask, updateDocument, addNote, addActivity, addMerchant, sendReminder }}>
       {children}
     </AppContext.Provider>
   )

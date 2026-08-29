@@ -1,6 +1,7 @@
 import { ArrowLeft, Building2, CheckCircle2, ExternalLink } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ActivityTimeline, NotesPanel } from '../components/ActivityTimeline'
+import CommunicationHistory from '../components/CommunicationHistory'
 import ContractPanel from '../components/ContractPanel'
 import DiscountPanel from '../components/DiscountPanel'
 import DocumentChecklist from '../components/DocumentChecklist'
@@ -63,7 +64,7 @@ function NextActionCard({ merchant, showToast }) {
 export default function MerchantDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getMerchant, updateMerchant, updateTask, updateDocument, addNote, addActivity } = useApp()
+  const { getMerchant, updateMerchant, updateTask, updateDocument, addNote, addActivity, sendReminder } = useApp()
   const merchant = getMerchant(id)
   const { toast, showToast } = useToast()
 
@@ -183,7 +184,7 @@ export default function MerchantDetail() {
 
           <DocumentChecklist documents={merchant.documents} onUpdate={handleDocUpdate} />
 
-          <ContractPanel merchant={merchant} onUpdate={u => updateMerchant(id, u)} showToast={showToast} />
+          <ContractPanel merchant={merchant} onUpdate={u => updateMerchant(id, u)} onSendReminder={channels => sendReminder(id, channels)} showToast={showToast} />
 
           <SignaturePanel merchant={merchant} onUpdate={u => updateMerchant(id, u)} />
 
@@ -204,6 +205,7 @@ export default function MerchantDetail() {
             notes={merchant.notes}
             onAdd={text => { addNote(id, text); addActivity(id, 'Note Added', text.slice(0, 60)) }}
           />
+          <CommunicationHistory comms={merchant.comms_history} />
           <ActivityTimeline activity={merchant.activity} />
         </div>
       </div>

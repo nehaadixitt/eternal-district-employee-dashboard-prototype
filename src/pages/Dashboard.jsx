@@ -73,6 +73,13 @@ export default function Dashboard() {
 
   const actionRequired = useMemo(() => merchants.filter(m => m.overall_status !== 'live' && getNextAction(m)), [merchants])
 
+  const awaitingSignature = useMemo(() => merchants.filter(m =>
+    ['sent','raised'].includes(m.contract?.status) && m.contract?.status !== 'signed'
+  ).map(m => ({
+    ...m,
+    daysSinceSent: m.contract.raised_at ? Math.floor((Date.now() - new Date(m.contract.raised_at)) / 86400000) : 0,
+  })).sort((a, b) => b.daysSinceSent - a.daysSinceSent), [merchants])
+
   const filtered = useMemo(() => {
     let list = [...merchants]
     if (search) { const q = search.toLowerCase(); list = list.filter(m => m.restaurant_name.toLowerCase().includes(q) || (m.restaurant_id||'').toLowerCase().includes(q)) }
@@ -107,6 +114,54 @@ export default function Dashboard() {
         <StatCard label="Ready to Go Live" value={stats.ready_live} color="#7e22ce" />
         <StatCard label="Live" value={stats.live} color="#15803d" icon={CheckCircle2} />
       </div>
+
+      {/* Awaiting Signature Escalation */}
+      {awaitingSignature.length > 0 && (
+        <div style={{ marginBottom:'28px' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'14px' }}>
+            <span style={{ fontSize:'14px' }}>🔴</span>
+            <span style={{ fontSize:'11px', fontWeight:700, color:'#111827', textTransform:'uppercase', letterSpacing:'0.06em' }}>Unsigned Contracts</span>
+            <span style={{ fontSize:'11px', fontWeight:600, background:'#fef2f2', color:'#b91c1c', padding:'1px 7px', borderRadius:'999px', border:'1px solid #fecaca' }}>{awaitingSignature.length}</span>
+          </div>
+          <div style={{ background:'#fff', border:'1px solid #e5e7eb', borderRadius:'12px', overflow:'hidden' }}>
+            <table style={{ width:'100%', borderCollapse:'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom:'1px solid #f3f4f6' }}>
+                  {['Merchant','Waiting','Last Reminder','Reminders Sent','Action'].map(h => (
+                    <th key={h} style={{ textAlign:'left', fontSize:'11px', fontWeight:600, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em', padding:'10px 20px' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {awaitingSignature.map(m => (
+                  <tr key={m.id} style={{ borderBottom:'1px solid #f9fafb' }}>
+                    <td style={{ padding:'12px 20px' }}>
+                      <div style={{ fontSize:'13px', fontWeight:600, color:'#111827' }}>{m.restaurant_name}</div>
+                      <div style={{ fontSize:'11px', color:'#9ca3af', marginTop:'1px' }}>{m.restaurant_id}</div>
+                    </td>
+                    <td style={{ padding:'12px 20px' }}>
+                      <span style={{ fontSize:'12px', fontWeight:600, color: m.daysSinceSent >= 2 ? '#b91c1c' : '#b45309' }}>
+                        {m.daysSinceSent} day{m.daysSinceSent !== 1 ? 's' : ''}
+                      </span>
+                    </td>
+                    <td style={{ padding:'12px 20px', fontSize:'12px', color:'#6b7280' }}>
+                      {m.contract.last_reminder_at ? new Date(m.contract.last_reminder_at).toLocaleDateString() : 'Never'}
+                    </td>
+                    <td style={{ padding:'12px 20px', fontSize:'12px', color:'#374151', textAlign:'center' }}>
+                      {m.contract.reminder_count || 0}
+                    </td>
+                    <td style={{ padding:'12px 20px' }}>
+                      <button onClick={() => navigate(`/merchant/${m.id}`)} style={{ fontSize:'12px', fontWeight:500, background:'#111827', color:'#fff', border:'none', borderRadius:'6px', padding:'5px 12px', cursor:'pointer' }}>
+                        View Account →
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Action Required */}
       {actionRequired.length > 0 && (

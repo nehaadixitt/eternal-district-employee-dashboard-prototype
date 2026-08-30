@@ -13,8 +13,8 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'MerchantFlow <onboarding@resend.dev>',
-        to: [process.env.TEST_EMAIL || email],
+        from: `MerchantFlow <onboarding@${process.env.RESEND_DOMAIN}>`,
+        to: [email],
         subject: `Action Required: Sign your onboarding contract — ${merchantName}`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#111827">

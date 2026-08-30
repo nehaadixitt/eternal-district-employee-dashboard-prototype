@@ -1,23 +1,27 @@
 import { useState } from 'react'
-import { Mail, MessageSquare, X, CheckCircle2 } from 'lucide-react'
+import { Mail, MessageSquare, X, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function ReminderModal({ merchant, onSend, onClose }) {
   const [channels, setChannels] = useState({ Email: true, SMS: true })
-  const [sent, setSent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendStatus, setSendStatus] = useState(null) // null | 'sent' | 'failed'
 
   function toggleChannel(ch) {
     setChannels(c => ({ ...c, [ch]: !c[ch] }))
   }
 
-  function handleSend() {
+  async function handleSend() {
     const selected = Object.entries(channels).filter(([, v]) => v).map(([k]) => k)
     if (!selected.length) return
-    onSend(selected)
-    setSent(true)
+    setSending(true)
+    const status = await onSend(selected)
+    setSendStatus(status)
+    setSending(false)
   }
 
   const reminderNum = (merchant.contract.reminder_count || 0) + 1
   const msgPreview = `Hi ${merchant.contact_name}, this is a reminder to complete the digital signature for your onboarding contract with us. Please sign at your earliest convenience.`
+  const disabled = (!channels.Email && !channels.SMS) || sending
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', zIndex:1000, display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
@@ -27,20 +31,15 @@ export default function ReminderModal({ merchant, onSend, onClose }) {
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'20px 24px', borderBottom:'1px solid #f3f4f6' }}>
           <div>
             <div style={{ fontSize:'15px', fontWeight:700, color:'#111827' }}>Send Contract Reminder</div>
-            <div style={{ fontSize:'12px', color:'#9ca3af', marginTop:'2px' }}>Reminder #{reminderNum} · Demo Mode</div>
+            <div style={{ fontSize:'12px', color:'#9ca3af', marginTop:'2px' }}>Reminder #{reminderNum}</div>
           </div>
           <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:'#9ca3af', padding:'4px' }}>
             <X size={18} />
           </button>
         </div>
 
-        {!sent ? (
+        {sendStatus === null ? (
           <div style={{ padding:'24px' }}>
-            {/* Demo badge */}
-            <div style={{ background:'#fef3c7', border:'1px solid #fde68a', borderRadius:'8px', padding:'10px 14px', marginBottom:'20px', display:'flex', alignItems:'center', gap:'8px' }}>
-              <span style={{ fontSize:'12px', fontWeight:600, color:'#92400e' }}>⚠ Demo Mode — No real messages will be sent</span>
-            </div>
-
             {/* Recipient */}
             <div style={{ marginBottom:'18px' }}>
               <div style={{ fontSize:'11px', fontWeight:600, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'10px' }}>Recipient</div>
@@ -90,23 +89,29 @@ export default function ReminderModal({ merchant, onSend, onClose }) {
               </button>
               <button
                 onClick={handleSend}
-                disabled={!channels.Email && !channels.SMS}
-                style={{ flex:2, padding:'10px', borderRadius:'8px', border:'none', background: (!channels.Email && !channels.SMS) ? '#e5e7eb' : '#111827', color: (!channels.Email && !channels.SMS) ? '#9ca3af' : '#fff', fontSize:'13px', fontWeight:600, cursor: (!channels.Email && !channels.SMS) ? 'not-allowed' : 'pointer' }}
+                disabled={disabled}
+                style={{ flex:2, padding:'10px', borderRadius:'8px', border:'none', background:disabled?'#e5e7eb':'#111827', color:disabled?'#9ca3af':'#fff', fontSize:'13px', fontWeight:600, cursor:disabled?'not-allowed':'pointer' }}
               >
-                Send Reminder
+                {sending ? 'Sending…' : 'Send Reminder'}
               </button>
             </div>
           </div>
         ) : (
           <div style={{ padding:'32px 24px', textAlign:'center' }}>
-            <div style={{ width:'48px', height:'48px', background:'#f0fdf4', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
-              <CheckCircle2 size={24} color="#15803d" />
+            <div style={{ width:'48px', height:'48px', background:sendStatus==='sent'?'#f0fdf4':'#fef2f2', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
+              {sendStatus === 'sent'
+                ? <CheckCircle2 size={24} color="#15803d" />
+                : <AlertCircle size={24} color="#dc2626" />}
             </div>
-            <div style={{ fontSize:'15px', fontWeight:700, color:'#111827', marginBottom:'6px' }}>Reminder sent successfully</div>
+            <div style={{ fontSize:'15px', fontWeight:700, color:'#111827', marginBottom:'6px' }}>
+              {sendStatus === 'sent' ? 'Reminder sent successfully' : 'Email delivery failed'}
+            </div>
             <div style={{ fontSize:'13px', color:'#6b7280', marginBottom:'4px' }}>
               {Object.entries(channels).filter(([,v])=>v).map(([k])=>k).join(' + ')} · {new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
             </div>
-            <div style={{ fontSize:'12px', color:'#9ca3af', marginBottom:'24px' }}>Recorded in activity timeline (Demo Mode)</div>
+            <div style={{ fontSize:'12px', color:'#9ca3af', marginBottom:'24px' }}>
+              {sendStatus === 'sent' ? 'Recorded in activity timeline' : 'Recorded as failed in activity timeline'}
+            </div>
             <button onClick={onClose} style={{ padding:'9px 24px', borderRadius:'8px', border:'none', background:'#111827', color:'#fff', fontSize:'13px', fontWeight:500, cursor:'pointer' }}>
               Done
             </button>

@@ -111,14 +111,34 @@ export function AppProvider({ children }) {
     ))
   }
 
-  // ── Send reminder (demo mode) ──────────────────────────────────────────
+  // ── Send reminder ──────────────────────────────────────────────────────
   async function sendReminder(merchantId, channels) {
     const now = new Date().toISOString()
     const merchant = getMerchant(merchantId)
     const reminderCount = (merchant.contract.reminder_count || 0) + 1
 
-    const commsEntry = { id: `c${Date.now()}`, merchant_id: merchantId, timestamp: now, channels, purpose: 'Contract Signature Reminder', reminder_number: reminderCount, triggered_by: currentUser.name, status: 'sent_demo' }
-    const activityEntry = { id: `a${Date.now()}`, merchant_id: merchantId, action: 'Contract Reminder Sent', description: `Reminder #${reminderCount} sent via ${channels.join(' + ')} (Demo Mode)`, user: currentUser.name, timestamp: now }
+    // Call serverless function (real email via Resend)
+    let status = 'sent'
+    try {
+      const res = await fetch('/api/send-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          merchantName: merchant.restaurant_name,
+          contactName: merchant.contact_name,
+          email: merchant.email,
+          phone: merchant.phone,
+          reminderNum: reminderCount,
+          channels,
+        }),
+      })
+      if (!res.ok) status = 'failed'
+    } catch {
+      status = 'failed'
+    }
+
+    const commsEntry = { id: `c${Date.now()}`, merchant_id: merchantId, timestamp: now, channels, purpose: 'Contract Signature Reminder', reminder_number: reminderCount, triggered_by: currentUser.name, status }
+    const activityEntry = { id: `a${Date.now()}`, merchant_id: merchantId, action: 'Contract Reminder Sent', description: `Reminder #${reminderCount} sent via ${channels.join(' + ')}${status === 'failed' ? ' (failed)' : ''}`, user: currentUser.name, timestamp: now }
     const updatedContract = { ...merchant.contract, last_reminder_at: now, reminder_count: reminderCount }
 
     await Promise.all([
@@ -131,6 +151,8 @@ export function AppProvider({ children }) {
       if (m.id !== merchantId) return m
       return { ...m, updated_at: now, contract: updatedContract, comms_history: [commsEntry, ...m.comms_history], activity: [...m.activity, activityEntry] }
     }))
+
+    return status
   }
 
   // ── Add new merchant ───────────────────────────────────────────────────

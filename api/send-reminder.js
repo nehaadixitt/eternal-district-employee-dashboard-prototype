@@ -14,7 +14,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         from: 'MerchantFlow <onboarding@resend.dev>',
-        to: [email],
+        to: [process.env.TEST_EMAIL || email],
         subject: `Action Required: Sign your onboarding contract — ${merchantName}`,
         html: `
           <div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;color:#111827">
